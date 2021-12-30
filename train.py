@@ -61,7 +61,7 @@ class AugmentImpulse:
         alpha= 0.5
         keep_mask = np.where(np.random.uniform(size=msh) >= np.ones(shape=msh) * alpha, np.ones(shape=msh), np.zeros(shape=msh))
         noise = np.random.uniform(size=np.shape(x))
-        return x * keep_mask + noise * (1.0 - keep_mask)
+        return (x * keep_mask + noise * (1.0 - keep_mask)).reshape(x.shape)
 
 
 
