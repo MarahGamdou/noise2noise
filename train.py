@@ -46,6 +46,26 @@ class AugmentPoisson:
         chi = 30.0
         return np.random.poisson(chi*(x+0.5))/chi - 0.5
 
+class AugmentImpulse:
+    def __init__(self, alpha_min, alpha_max):
+        self.alpha_max = alpha_max
+        self.alpha_min = alpha_min
+    def add_train_noise_tf(self, x):
+        msh = tf.shape(x[:, :1, ...])
+        alpha = tf.random_uniform(shape=[tf.shape(x)[0], 1, 1, 1], minval=self.alpha_min, maxval=self.alpha_max)
+        keep_mask = tf.where(tf.random_uniform(shape=msh) >= tf.ones(shape=msh) * alpha, tf.ones(shape=msh), tf.zeros(shape=msh))
+        noise = tf.random_uniform(shape=tf.shape(x))
+        return x * keep_mask + noise * (1.0 - keep_mask)
+    def add_validation_noise_np(self, x):
+        msh = tf.shape(x[:, :1, ...])
+        alpha= 0.7
+        keep_mask = tf.where(tf.random_uniform(shape=msh) >= tf.ones(shape=msh) * alpha, tf.ones(shape=msh), tf.zeros(shape=msh))
+        noise = tf.random_uniform(shape=tf.shape(x))
+        return x * keep_mask + noise * (1.0 - keep_mask)
+
+
+
+
 def compute_ramped_down_lrate(i, iteration_count, ramp_down_perc, learning_rate):
     ramp_down_start_iter = iteration_count * (1 - ramp_down_perc)
     if i >= ramp_down_start_iter:

@@ -49,6 +49,9 @@ poisson_noise_config = dnnlib.EasyDict(
     lam_max=50.0
 )
 
+impulse_noise_config = dnnlib.EasyDict(
+    func_name='train.AugmentImpulse',
+)
 # ------------------------------------------------------------------------------------------
 # Preconfigured validation sets
 datasets = {
@@ -61,7 +64,8 @@ default_validation_config = datasets['kodak']
 
 corruption_types = {
     'gaussian': gaussian_noise_config,
-    'poisson': poisson_noise_config
+    'poisson': poisson_noise_config,
+    'impulse': impulse_noise_config
 }
 
 # Train config
@@ -76,6 +80,7 @@ train_config = dnnlib.EasyDict(
     ramp_down_perc=0.3,
     noise=gaussian_noise_config,
 #    noise=poisson_noise_config,
+#    noise=impulse_noise_config,
     noise2noise=True,
     train_tfrecords='datasets/imagenet_val_raw.tfrecords',
     validation_config=default_validation_config
@@ -189,7 +194,7 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(help='Sub-commands', dest='command')
     parser_train = subparsers.add_parser('train', help='Train a network')
     parser_train.add_argument('--noise2noise', nargs='?', type=str2bool, const=True, default=True, help='Noise2noise (--noise2noise=true) or noise2clean (--noise2noise=false).  Default is noise2noise=true.')
-    parser_train.add_argument('--noise', default='gaussian', help='Type of noise corruption (one of: gaussian, poisson)')
+    parser_train.add_argument('--noise', default='gaussian', help='Type of noise corruption (one of: gaussian, poisson, impulse)')
     parser_train.add_argument('--long-train', default=False, help='Train for a very long time (500k iterations or 500k*minibatch image)')
     parser_train.add_argument('--train-tfrecords', help='Filename of the training set tfrecords file')
     parser_train.set_defaults(func=train)
@@ -197,7 +202,7 @@ if __name__ == "__main__":
     parser_validate = subparsers.add_parser('validate', help='Run a set of images through the network')
     parser_validate.add_argument('--dataset-dir', help='Load all images from a directory (*.png, *.jpg/jpeg, *.bmp)')
     parser_validate.add_argument('--network-snapshot', help='Trained network pickle')
-    parser_validate.add_argument('--noise', default='gaussian', help='Type of noise corruption (one of: gaussian, poisson)')
+    parser_validate.add_argument('--noise', default='gaussian', help='Type of noise corruption (one of: gaussian, poisson, impulse)')
     parser_validate.set_defaults(func=validate)
 
     parser_infer_image = subparsers.add_parser('infer-image', help='Run one image through the network without adding any noise')
