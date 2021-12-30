@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
+﻿# Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
 # 4.0 International License. To view a copy of this license, visit
@@ -18,7 +18,6 @@ import re
 import shutil
 import time
 import traceback
-import typeguard
 
 import zipfile
 
@@ -63,7 +62,6 @@ class SubmitConfig(util.EasyDict):
         num_gpus: Number of GPUs used/requested for the run.
         print_info: Whether to print debug information when submitting.
         ask_confirmation: Whether to ask a confirmation before submitting.
-        use_typeguard: Whether to use the typeguard module for run-time type checking (slow!).
         run_id: Automatically populated value during submit.
         run_name: Automatically populated value during submit.
         run_dir: Automatically populated value during submit.
@@ -88,7 +86,6 @@ class SubmitConfig(util.EasyDict):
         self.num_gpus = 1
         self.print_info = False
         self.ask_confirmation = False
-        self.use_typeguard = False
 
         # (automatically populated)
         self.run_id = None
@@ -230,10 +227,6 @@ def run_wrapper(submit_config: SubmitConfig) -> None:
 
     checker = None
 
-    if submit_config.use_typeguard:
-        checker = typeguard.TypeChecker("dnnlib")
-        checker.start()
-
     # when running locally, redirect stderr to stdout, log stdout to a file, and force flushing
     if is_local:
         logger = util.Logger(file_name=os.path.join(submit_config.run_dir, "log.txt"), file_mode="w", should_flush=True)
@@ -280,6 +273,7 @@ def submit_run(submit_config: SubmitConfig, run_func_name: str, **run_func_kwarg
     assert submit_config.submit_target == SubmitTarget.LOCAL
     if submit_config.submit_target in {SubmitTarget.LOCAL}:
         run_dir = _create_run_dir_local(submit_config)
+
         submit_config.task_name = "{0}-{1:05d}-{2}".format(submit_config.user_name, submit_config.run_id, submit_config.run_desc)
         submit_config.run_dir = run_dir
         _populate_run_dir(run_dir, submit_config)
