@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
+﻿# Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
 # 4.0 International License. To view a copy of this license, visit
@@ -19,12 +19,6 @@ from .. import util
 
 from .tfutil import TfExpression, TfExpressionEx
 
-try:
-    # TensorFlow 1.13
-    from tensorflow.python.ops import nccl_ops
-except:
-    # Older TensorFlow versions
-    import tensorflow.contrib.nccl as nccl_ops
 
 class Optimizer:
     """A Wrapper for tf.train.Optimizer.
@@ -131,7 +125,7 @@ class Optimizer:
                         g = [dev_grads[dev][var_idx][0] for dev in devices]
 
                         if np.prod(grad_shape):  # nccl does not support zero-sized tensors
-                            g = nccl_ops.all_sum(g)
+                            g = tf.contrib.nccl.all_sum(g)
 
                         for dev, gg in zip(devices, g):
                             dev_grads[dev][var_idx] = (gg, dev_grads[dev][var_idx][1])
