@@ -79,6 +79,7 @@ class Network:
         # Init graph.
         self._init_graph()
         self.reset_vars()
+        self.reset_own_vars()
 
     def _init_fields(self) -> None:
         self.name = None
@@ -151,6 +152,10 @@ class Network:
         self.vars = OrderedDict([(self.get_var_local_name(var), var) for var in tf.global_variables(self.scope + "/")])
         self.trainables = OrderedDict([(self.get_var_local_name(var), var) for var in tf.trainable_variables(self.scope + "/")])
 
+    def reset_own_vars(self) -> None:
+        """Re-initialize all variables of this network, excluding sub-networks."""
+        tfutil.run([var.initializer for var in self.vars.values()])
+            
     def reset_vars(self) -> None:
         """Run initializers for all variables defined by this network."""
         tfutil.run([var.initializer for var in self.vars.values()])
