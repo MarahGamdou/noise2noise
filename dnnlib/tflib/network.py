@@ -218,15 +218,13 @@ class Network:
 
     def __getstate__(self) -> dict:
         """Pickle export."""
-        state = dict()
-        state["version"]            = 3
-        state["name"]               = self.name
-        state["static_kwargs"]      = dict(self.static_kwargs)
-        state["components"]         = dict(self.components)
-        state["build_module_src"]   = self._build_module_src
-        state["build_func_name"]    = self._build_func_name
-        state["variables"]          = list(zip(self.own_vars.keys(), tfutil.run(list(self.own_vars.values()))))
-        return state
+        return {
+            "version": 2,
+            "name": self.name,
+            "static_kwargs": dict(self.static_kwargs),
+            "build_module_src": self._build_module_src,
+            "build_func_name": self._build_func_name,
+            "variables": list(zip(self.vars.keys(), tfutil.run(list(self.vars.values()))))}
 
     def __setstate__(self, state: dict) -> None:
         """Pickle import."""
