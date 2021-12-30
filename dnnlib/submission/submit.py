@@ -29,6 +29,7 @@ from ..util import EasyDict
 
 class SubmitTarget(Enum):
     """The target where the function should be run.
+
     LOCAL: Run it locally.
     """
     LOCAL = 1
@@ -36,6 +37,7 @@ class SubmitTarget(Enum):
 
 class PathType(Enum):
     """Determines in which format should a path be formatted.
+
     WINDOWS: Format with Windows style.
     LINUX: Format with Linux/Posix style.
     AUTO: Use current OS type to select either WINDOWS or LINUX.
@@ -50,6 +52,7 @@ _user_name_override = None
 
 class SubmitConfig(util.EasyDict):
     """Strongly typed config dict needed to submit runs.
+
     Attributes:
         run_dir_root: Path to the run dir root. Can be optionally templated with tags. Needs to always be run through get_path_from_template.
         run_desc: Description of the run. Will be used in the run dir and task name.

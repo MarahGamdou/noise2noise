@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
+﻿# Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
 # 4.0 International License. To view a copy of this license, visit
@@ -6,10 +6,12 @@
 # Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 """Helper for adding automatically tracked values to Tensorboard.
+
 Autosummary creates an identity op that internally keeps track of the input
 values and automatically shows up in TensorBoard. The reported value
 represents an average over input components. The average is accumulated
 constantly over time and flushed when save_summaries() is called.
+
 Notes:
 - The output tensor must be used as an input for something else in the
   graph. Otherwise, the autosummary op will not get executed, and the average
@@ -69,8 +71,23 @@ def _create_var(name: str, value_expr: TfExpression) -> TfExpression:
     return update_op
 
 
-def autosummary(name: str, value: TfExpressionEx) -> TfExpressionEx:
-    """Create a new autosummary."""
+def autosummary(name: str, value: TfExpressionEx, passthru: TfExpressionEx = None) -> TfExpressionEx:
+    """Create a new autosummary.
+
+    Args:
+        name:     Name to use in TensorBoard
+        value:    TensorFlow expression or python value to track
+        passthru: Optionally return this TF node without modifications but tack an autosummary update side-effect to this node.
+
+    Example use of the passthru mechanism:
+
+    n = autosummary('l2loss', loss, passthru=n)
+
+    This is a shorthand for the following code:
+
+    with tf.control_dependencies([autosummary('l2loss', loss)]):
+        n = tf.identity(n)
+    """
     tfutil.assert_tf_initialized()
     name_id = name.replace("/", "_")
 
@@ -78,7 +95,7 @@ def autosummary(name: str, value: TfExpressionEx) -> TfExpressionEx:
         with tf.name_scope("summary_" + name_id), tf.device(value.device):
             update_op = _create_var(name, value)
             with tf.control_dependencies([update_op]):
-                return tf.identity(value)
+                return tf.identity(value if passthru is None else passthru)
 
     else:  # python scalar or numpy array
         if name not in _immediate:
@@ -89,7 +106,7 @@ def autosummary(name: str, value: TfExpressionEx) -> TfExpressionEx:
 
         update_op, update_value = _immediate[name]
         tfutil.run(update_op, {update_value: value})
-        return value
+        return value if passthru is None else passthru
 
 
 def finalize_autosummaries() -> None:
