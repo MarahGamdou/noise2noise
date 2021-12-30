@@ -58,7 +58,7 @@ class AugmentImpulse:
         return x * keep_mask + noise * (1.0 - keep_mask)
     def add_validation_noise_np(self, x):
         msh = tf.shape(x[:, :1, ...])
-        alpha= 0.7
+        alpha= 0.5
         keep_mask = tf.where(tf.random_uniform(shape=msh) >= tf.ones(shape=msh) * alpha, tf.ones(shape=msh), tf.zeros(shape=msh))
         noise = tf.random_uniform(shape=tf.shape(x))
         return x * keep_mask + noise * (1.0 - keep_mask)

@@ -51,6 +51,8 @@ poisson_noise_config = dnnlib.EasyDict(
 
 impulse_noise_config = dnnlib.EasyDict(
     func_name='train.AugmentImpulse',
+    alpha_min= 0,
+    alpha_max= 1
 )
 # ------------------------------------------------------------------------------------------
 # Preconfigured validation sets
