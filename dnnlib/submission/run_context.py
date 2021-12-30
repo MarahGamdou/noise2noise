@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2018, NVIDIA CORPORATION. All rights reserved.
+﻿# Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
 # 4.0 International License. To view a copy of this license, visit
@@ -11,7 +11,6 @@ import datetime
 import json
 import os
 import pprint
-import signal
 import time
 import types
 
@@ -53,20 +52,11 @@ class RunContext(object):
         with open(os.path.join(submit_config.run_dir, "run.txt"), "w") as f:
             pprint.pprint(self.run_txt_data, stream=f, indent=4, width=200, compact=False)
 
-        # overrides whatever previous function was set as signal handler for these signals
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-
     def __enter__(self) -> "RunContext":
         return self
 
     def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         self.close()
-
-    def _signal_handler(self, signum: int, frame: int) -> None:
-        del signum, frame  # unused
-        self.should_stop_flag = True
-        print("RunContext: Interrupt signal received!")
 
     def update(self, loss: Any = 0, cur_epoch: Any = 0, max_epoch: Any = None) -> None:
         """Do general housekeeping and keep the state of the context up-to-date.
